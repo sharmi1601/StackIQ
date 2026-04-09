@@ -1,0 +1,11 @@
+Dataset_Cleaned/
+Dataset_Before_Cleaning/
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
+*.npy
+*.bin
+*.parquet
+*.csv
+*.db
+anaconda_projects/

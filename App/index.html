@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StackIQ</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: #1a1a2e;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh;
+  overflow: hidden;
+}
+/* Phone Frame */
+.phone-frame {
+  width: 390px; height: 844px;
+  border-radius: 50px;
+  border: 8px solid #2a2a3e;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 0 60px rgba(6,182,212,0.15), 0 20px 60px rgba(0,0,0,0.5);
+  background: #0F172A;
+}
+.phone-notch {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 150px; height: 28px; background: #2a2a3e;
+  border-radius: 0 0 20px 20px; z-index: 100;
+}
+.phone-screen {
+  width: 100%; height: 100%;
+  overflow-y: auto; overflow-x: hidden;
+  position: relative;
+  scrollbar-width: none;
+}
+.phone-screen::-webkit-scrollbar { display: none; }
+
+/* Color Variables */
+:root {
+  --primary: #0F172A;
+  --primary-blue: #1E3A8A;
+  --accent: #06B6D4;
+  --bg: #F8FAFC;
+  --card: #E2E8F0;
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --text-muted: #94A3B8;
+  --border: #CBD5E1;
+  --success: #10B981;
+  --white: #FFFFFF;
+}
+
+/* Splash Screen */
+.splash-screen {
+  width: 100%; height: 100%; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: linear-gradient(145deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+}
+.splash-title { font-size: 48px; font-weight: 800; color: var(--white); letter-spacing: 2px; }
+.splash-title span { display: inline-block; opacity: 0; animation: letterIn 0.4s forwards; }
+@keyframes letterIn { to { opacity: 1; transform: translateY(0); } from { opacity: 0; transform: translateY(20px); } }
+.splash-subtitle {
+  font-size: 14px; color: var(--accent); letter-spacing: 3px;
+  text-transform: uppercase; margin-top: 12px; opacity: 0;
+  animation: fadeIn 0.8s forwards 2.5s;
+}
+@keyframes fadeIn { to { opacity: 1; } }
+.splash-glow {
+  width: 200px; height: 200px; background: radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%);
+  position: absolute; border-radius: 50%;
+}
+
+/* Login Screen */
+.login-screen {
+  width: 100%; height: 100%; display: flex; flex-direction: column;
+  background: var(--primary); padding: 60px 28px 28px;
+}
+.login-logo { font-size: 36px; font-weight: 800; color: var(--white); text-align: center; margin-bottom: 4px; }
+.login-sub { font-size: 12px; color: var(--accent); text-align: center; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 48px; }
+.input-group { margin-bottom: 16px; }
+.input-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; letter-spacing: 0.5px; }
+.input-field {
+  width: 100%; padding: 14px 16px; background: #1E293B; border: 1px solid #334155;
+  border-radius: 12px; color: var(--white); font-size: 15px; font-family: 'Inter', sans-serif;
+  outline: none; transition: border 0.2s;
+}
+.input-field:focus { border-color: var(--accent); }
+.input-field::placeholder { color: #475569; }
+.btn-primary {
+  width: 100%; padding: 15px; background: var(--accent); color: var(--primary);
+  border: none; border-radius: 12px; font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; margin-top: 8px;
+}
+.btn-primary:hover { background: #0EA5C0; transform: translateY(-1px); }
+.btn-primary:disabled { background: #334155; color: #64748B; cursor: not-allowed; transform: none; }
+.login-switch {
+  text-align: center; margin-top: 24px; font-size: 13px; color: var(--text-muted);
+}
+.login-switch a { color: var(--accent); cursor: pointer; font-weight: 600; text-decoration: none; }
+.login-error { color: #F87171; font-size: 12px; text-align: center; margin-top: 8px; }
+
+/* Onboarding Screen */
+.onboarding-screen {
+  width: 100%; min-height: 100%; display: flex; flex-direction: column;
+  background: var(--primary); padding: 60px 24px 28px;
+}
+.onboarding-greeting { font-size: 26px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+.onboarding-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 24px; }
+.onboarding-hint { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+.onboarding-hint span { color: var(--accent); font-weight: 600; }
+.tags-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+.tag-capsule {
+  padding: 10px 18px; border-radius: 24px; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s; border: 1.5px solid #334155;
+  color: var(--text-muted); background: #1E293B;
+}
+.tag-capsule.selected { border-color: var(--accent); color: var(--accent); background: rgba(6,182,212,0.1); }
+.selected-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; min-height: 32px; }
+.selected-tag {
+  padding: 5px 12px; border-radius: 16px; font-size: 11px; font-weight: 600;
+  background: var(--accent); color: var(--primary);
+}
+
+/* Home Screen */
+.home-screen {
+  width: 100%; min-height: 100%; background: var(--bg);
+  display: flex; flex-direction: column;
+}
+.home-topbar {
+  background: var(--primary); padding: 44px 20px 36px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.topbar-logo { font-size: 22px; font-weight: 800; color: var(--white); }
+.topbar-logo span { color: var(--accent); }
+.avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  color: var(--white); border: 2px solid var(--accent);
+}
+.avatar-1 { background: #7C3AED; }
+.avatar-2 { background: #2563EB; }
+.avatar-3 { background: #059669; }
+.avatar-4 { background: #D97706; }
+.avatar-5 { background: #DC2626; }
+.avatar-6 { background: #EC4899; }
+.search-wrapper { padding: 0 20px; margin-top: -20px; position: relative; z-index: 10; }
+.search-bar {
+  width: 100%; padding: 14px 16px 14px 44px; background: var(--white);
+  border: 1px solid var(--border); border-radius: 14px;
+  font-size: 14px; color: var(--text-primary); font-family: 'Inter', sans-serif;
+  outline: none; box-shadow: 0 4px 12px rgba(0,0,0,0.06); transition: all 0.2s;
+}
+.search-bar:focus { border-color: var(--accent); box-shadow: 0 4px 16px rgba(6,182,212,0.15); }
+.search-bar::placeholder { color: var(--text-muted); }
+.search-icon {
+  position: absolute; left: 34px; top: 50%; transform: translateY(-50%);
+  font-size: 16px; color: var(--accent); font-weight: 800;
+}
+.feed-section { padding: 16px 20px 0; }
+.feed-label { font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+.question-card {
+  background: var(--white); border-radius: 14px; padding: 16px;
+  margin-bottom: 12px; cursor: pointer; transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.question-card:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.q-title { font-size: 14px; font-weight: 600; color: var(--text-primary); line-height: 1.4; margin-bottom: 8px; }
+.q-preview { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.q-meta { display: flex; gap: 16px; font-size: 11px; color: var(--text-muted); }
+.q-meta-item { display: flex; align-items: center; gap: 4px; }
+.q-meta-item.votes { color: var(--success); font-weight: 600; }
+.q-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.q-tag {
+  padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 500;
+  background: rgba(6,182,212,0.1); color: var(--accent);
+}
+.feed-reason { font-size: 10px; color: var(--accent); font-weight: 500; margin-bottom: 6px; }
+.load-more {
+  text-align: center; padding: 16px; color: var(--accent);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.latency-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 8px;
+  font-size: 10px; background: rgba(16,185,129,0.1); color: var(--success);
+  font-weight: 500; margin-left: 8px;
+}
+
+/* Question Detail Screen */
+.detail-screen {
+  width: 100%; min-height: 100%; background: var(--bg);
+}
+.detail-question {
+  background: var(--white); padding: 20px; margin: 0 0 2px;
+  border-bottom: 2px solid var(--accent);
+}
+.detail-title { font-size: 17px; font-weight: 700; color: var(--text-primary); line-height: 1.4; margin-bottom: 10px; }
+.detail-body { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px; }
+.detail-meta { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); }
+.answers-header { padding: 16px 20px 8px; font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.answer-card {
+  background: var(--white); padding: 16px 20px; margin-bottom: 2px;
+  border-left: 3px solid transparent;
+}
+.answer-card.accepted { border-left-color: var(--success); }
+.answer-body { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 8px; }
+.answer-meta { display: flex; align-items: center; gap: 12px; font-size: 11px; }
+.accepted-badge { padding: 2px 8px; border-radius: 6px; font-size: 10px; background: rgba(16,185,129,0.1); color: var(--success); font-weight: 600; }
+.back-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 0; color: var(--accent); font-size: 13px;
+  font-weight: 600; cursor: pointer; border: none; background: none;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Profile Screen */
+.profile-screen {
+  width: 100%; height: 100%; background: var(--primary);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 80px 28px 28px;
+}
+.profile-avatar {
+  width: 80px; height: 80px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px; font-weight: 700; color: var(--white);
+  border: 3px solid var(--accent); margin-bottom: 12px;
+}
+.profile-name { font-size: 20px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+.profile-username { font-size: 13px; color: var(--text-muted); margin-bottom: 32px; }
+.profile-menu { width: 100%; }
+.profile-menu-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px; border-radius: 12px; cursor: pointer;
+  transition: all 0.2s; color: var(--white); font-size: 15px; font-weight: 500;
+  margin-bottom: 4px;
+}
+.profile-menu-item:hover { background: #1E293B; }
+.profile-menu-item.danger { color: #F87171; }
+.menu-icon { width: 20px; text-align: center; font-size: 16px; }
+
+/* History Screen */
+.history-screen {
+  width: 100%; min-height: 100%; background: var(--bg);
+}
+.history-item {
+  padding: 14px 20px; background: var(--white);
+  border-bottom: 1px solid var(--card); cursor: pointer;
+}
+.history-item:hover { background: var(--card); }
+.history-query { font-size: 14px; color: var(--text-primary); font-weight: 500; }
+.history-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* Loading */
+.loading { text-align: center; padding: 40px; color: var(--text-muted); font-size: 13px; }
+.spinner {
+  width: 24px; height: 24px; border: 2.5px solid var(--card);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin 0.7s linear infinite; margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+const API = "http://localhost:8000/api";
+
+// Avatar options
+const AVATARS = [
+  { id: 1, bg: "avatar-1", emoji: "S" },
+  { id: 2, bg: "avatar-2", emoji: "D" },
+  { id: 3, bg: "avatar-3", emoji: "A" },
+  { id: 4, bg: "avatar-4", emoji: "K" },
+  { id: 5, bg: "avatar-5", emoji: "R" },
+  { id: 6, bg: "avatar-6", emoji: "M" },
+];
+
+function getAvatar(id, name) {
+  const av = AVATARS.find(a => a.id === id) || AVATARS[0];
+  const letter = name ? name[0].toUpperCase() : "U";
+  return { ...av, letter };
+}
+
+// ============================================================
+// SPLASH SCREEN
+// ============================================================
+function SplashScreen({ onDone }) {
+  useEffect(() => { setTimeout(onDone, 3200); }, []);
+  const title = "StackIQ";
+  return (
+    <div className="splash-screen">
+      <div className="splash-glow" />
+      <div className="splash-title">
+        {title.split("").map((ch, i) => (
+          <span key={i} style={{ animationDelay: `${0.5 + i * 0.2}s` }}>{ch}</span>
+        ))}
+      </div>
+      <div className="splash-subtitle">Smarter Search for Developers</div>
+    </div>
+  );
+}
+
+// ============================================================
+// LOGIN SCREEN
+// ============================================================
+function LoginScreen({ onLogin, onGoSignup }) {
+  const [username, setUsername] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!username.trim()) return;
+    setLoading(true); setError("");
+    try {
+      const res = await fetch(`${API}/login`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: username.trim() })
+      });
+      if (!res.ok) { setError("User not found. Try signing up!"); setLoading(false); return; }
+      const data = await res.json();
+      onLogin(data);
+    } catch (e) { setError("Cannot connect to server. Is backend running?"); }
+    setLoading(false);
+  };
+
+  return (
+    <div className="login-screen">
+      <div className="login-logo">Stack<span style={{color:"var(--accent)"}}>IQ</span></div>
+      <div className="login-sub">Smarter Search for Developers</div>
+      <div className="input-group">
+        <div className="input-label">USERNAME</div>
+        <input className="input-field" placeholder="Enter your username" value={username}
+          onChange={e => setUsername(e.target.value)} onKeyDown={e => e.key === "Enter" && handleLogin()} />
+      </div>
+      <button className="btn-primary" onClick={handleLogin} disabled={!username.trim() || loading}>
+        {loading ? "Logging in..." : "Login"}
+      </button>
+      {error && <div className="login-error">{error}</div>}
+      <div className="login-switch">
+        New user? <a onClick={onGoSignup}>Sign Up</a>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// SIGNUP SCREEN
+// ============================================================
+function SignupScreen({ onSignup, onGoLogin }) {
+  const [username, setUsername] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [selectedAvatar, setSelectedAvatar] = useState(1);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSignup = async () => {
+    if (!username.trim() || !displayName.trim()) return;
+    setLoading(true); setError("");
+    try {
+      const res = await fetch(`${API}/signup`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: username.trim(), display_name: displayName.trim(), avatar_id: selectedAvatar })
+      });
+      if (!res.ok) { const d = await res.json(); setError(d.detail || "Signup failed"); setLoading(false); return; }
+      const data = await res.json();
+      onSignup(data);
+    } catch (e) { setError("Cannot connect to server"); }
+    setLoading(false);
+  };
+
+  return (
+    <div className="login-screen">
+      <div className="login-logo">Stack<span style={{color:"var(--accent)"}}>IQ</span></div>
+      <div className="login-sub">Create Your Account</div>
+      <div className="input-group">
+        <div className="input-label">DISPLAY NAME</div>
+        <input className="input-field" placeholder="What should we call you?" value={displayName}
+          onChange={e => setDisplayName(e.target.value)} />
+      </div>
+      <div className="input-group">
+        <div className="input-label">USERNAME</div>
+        <input className="input-field" placeholder="Choose a unique username" value={username}
+          onChange={e => setUsername(e.target.value)} />
+      </div>
+      <div className="input-group">
+        <div className="input-label">PICK YOUR AVATAR</div>
+        <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+          {AVATARS.map(av => (
+            <div key={av.id} className={`avatar ${av.bg}`}
+              style={{ width: 44, height: 44, fontSize: 16, border: selectedAvatar === av.id ? "2.5px solid var(--accent)" : "2px solid transparent", cursor: "pointer" }}
+              onClick={() => setSelectedAvatar(av.id)}>
+              {displayName ? displayName[0].toUpperCase() : av.emoji}
+            </div>
+          ))}
+        </div>
+      </div>
+      <button className="btn-primary" onClick={handleSignup} disabled={!username.trim() || !displayName.trim() || loading}>
+        {loading ? "Creating..." : "Sign Up"}
+      </button>
+      {error && <div className="login-error">{error}</div>}
+      <div className="login-switch">
+        Already have an account? <a onClick={onGoLogin}>Login</a>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// ONBOARDING SCREEN
+// ============================================================
+function OnboardingScreen({ user, onDone }) {
+  const [tags, setTags] = useState([]);
+  const [selected, setSelected] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API}/tags`).then(r => r.json()).then(d => { setTags(d.tags); setLoading(false); });
+  }, []);
+
+  const toggle = (tag) => {
+    setSelected(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  };
+
+  const handleDone = async () => {
+    await fetch(`${API}/interests`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: user.user_id, tags: selected })
+    });
+    onDone();
+  };
+
+  return (
+    <div className="onboarding-screen">
+      <div className="onboarding-greeting">Hey {user.display_name} 👋</div>
+      <div className="onboarding-sub">Let's begin our journey</div>
+      <div style={{ fontSize: 18, fontWeight: 700, color: "var(--white)", marginBottom: 16 }}>Tell us your interests</div>
+      <div className="onboarding-hint">Please select at least <span>3 topics</span></div>
+      {selected.length > 0 && (
+        <div className="selected-tags">
+          {selected.map(t => <span key={t} className="selected-tag">{t}</span>)}
+        </div>
+      )}
+      {loading ? <div className="loading"><div className="spinner" />Loading tags...</div> : (
+        <div className="tags-grid">
+          {tags.map(tag => (
+            <div key={tag} className={`tag-capsule ${selected.includes(tag) ? "selected" : ""}`}
+              onClick={() => toggle(tag)}>{tag}</div>
+          ))}
+        </div>
+      )}
+      <button className="btn-primary" onClick={handleDone} disabled={selected.length < 3}
+        style={{ marginTop: "auto" }}>
+        {selected.length < 3 ? `Select ${3 - selected.length} more` : "Done"}
+      </button>
+    </div>
+  );
+}
+
+// ============================================================
+// HOME SCREEN
+// ============================================================
+function HomeScreen({ user, onQuestion, onProfile, searchState, setSearchState }) {
+  const [feed, setFeed] = useState([]);
+  const [feedLoaded, setFeedLoaded] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [latency, setLatency] = useState(searchState.latency || null);
+  const [refreshCount, setRefreshCount] = useState(0);
+  const [query, setQuery] = useState(searchState.query || "");
+  const av = getAvatar(user.avatar_id, user.display_name);
+
+  const loadFeed = (refresh) => {
+    setFeedLoaded(false);
+    fetch(`${API}/feed/${user.user_id}?limit=10&refresh=${refresh || 0}`).then(r => r.json()).then(d => {
+      setFeed(d.results || []); setFeedLoaded(true);
+    }).catch(() => setFeedLoaded(true));
+  };
+
+  // Always load feed on mount (so it's ready when user clears search)
+  useEffect(() => {
+    loadFeed(refreshCount);
+  }, []);
+
+  const handleSearch = async () => {
+    if (!query.trim()) { clearSearch(); return; }
+    setSearching(true);
+    try {
+      const res = await fetch(`${API}/search`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: query.trim(), user_id: user.user_id, limit: 10 })
+      });
+      const data = await res.json();
+      setSearchState({ query: query.trim(), results: data.results, latency: data.latency_ms });
+      setLatency(data.latency_ms);
+    } catch (e) { console.error(e); }
+    setSearching(false);
+  };
+
+  const clearSearch = () => {
+    setQuery("");
+    setSearchState({ query: "", results: null, latency: null });
+    setLatency(null);
+    // Feed is already loaded — just clearing search reveals it
+  };
+
+  const handleRefresh = () => {
+    clearSearch();
+    const next = refreshCount + 1;
+    setRefreshCount(next);
+    loadFeed(next);
+  };
+
+  const handleClick = async (q) => {
+    await fetch(`${API}/click`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: user.user_id, question_id: q.question_id, question_tags: q.tags })
+    });
+    onQuestion(q.question_id);
+  };
+
+  const isShowingSearch = searchState.results && searchState.results.length > 0;
+  const displayItems = isShowingSearch ? searchState.results : feed;
+  const isLoading = isShowingSearch ? searching : !feedLoaded;
+
+  return (
+    <div className="home-screen">
+      <div className="home-topbar">
+        <div className="topbar-logo" onClick={handleRefresh} style={{ cursor: "pointer" }} title="Tap to refresh feed">
+          Stack<span>IQ</span>
+        </div>
+        <div className={`avatar ${av.bg}`} onClick={onProfile}>{av.letter}</div>
+      </div>
+      <div className="search-wrapper">
+        <div className="search-icon">S</div>
+        <input className="search-bar" placeholder="Find anything..."
+          value={query} onChange={e => setQuery(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && handleSearch()} />
+      </div>
+      <div className="feed-section">
+        {isShowingSearch && (
+          <button className="back-btn" onClick={clearSearch} style={{ marginBottom: 8 }}>
+            ← Back to home feed
+          </button>
+        )}
+        <div className="feed-label">
+          {isShowingSearch ? `Results for "${searchState.query}"` : "Recommended for you"}
+          {latency && isShowingSearch && <span className="latency-badge">{latency}ms</span>}
+        </div>
+        {(isLoading || searching) ? (
+          <div className="loading"><div className="spinner" />{searching ? "Searching..." : "Loading feed..."}</div>
+        ) : displayItems.length === 0 ? (
+          <div className="loading">No results found. Try a different query.</div>
+        ) : (
+          <>
+            {displayItems.map((q, i) => (
+              <div key={q.question_id || i} className="question-card" onClick={() => handleClick(q)}>
+                {q.feed_reason && !isShowingSearch && <div className="feed-reason">{q.feed_reason}</div>}
+                <div className="q-title">{q.title}</div>
+                <div className="q-tags">
+                  {q.tags && q.tags.split(",").slice(0, 4).map((t, j) => (
+                    <span key={j} className="q-tag">{t.trim()}</span>
+                  ))}
+                </div>
+                <div className="q-preview">{q.top_answer || q.body}</div>
+                <div className="q-meta">
+                  <span className="q-meta-item votes">▲ {q.score?.toLocaleString()}</span>
+                  <span className="q-meta-item">💬 {q.answer_count || q.all_answers?.length || 0} answers</span>
+                  <span className="q-meta-item">👁 {q.views?.toLocaleString()}</span>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+      <div style={{ height: 20 }} />
+    </div>
+  );
+}
+
+// ============================================================
+// QUESTION DETAIL SCREEN
+// ============================================================
+function QuestionDetailScreen({ questionId, user, onBack, hasSearchResults }) {
+  const [question, setQuestion] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API}/question/${questionId}`).then(r => r.json()).then(d => {
+      setQuestion(d); setLoading(false);
+    });
+  }, [questionId]);
+
+  const backLabel = hasSearchResults ? "← Back to results" : "← Back to home";
+
+  if (loading) return <div className="detail-screen"><div className="home-topbar"><div className="topbar-logo">Stack<span>IQ</span></div></div><div className="loading"><div className="spinner" />Loading question...</div></div>;
+
+  return (
+    <div className="detail-screen">
+      <div className="home-topbar">
+        <div className="topbar-logo">Stack<span>IQ</span></div>
+      </div>
+      <div style={{ padding: "8px 20px 0" }}>
+        <button className="back-btn" onClick={onBack}>{backLabel}</button>
+      </div>
+      <div className="detail-question">
+        <div className="q-tags" style={{ marginBottom: 10 }}>
+          {question.tags && question.tags.split(",").map((t, j) => (
+            <span key={j} className="q-tag">{t.trim()}</span>
+          ))}
+        </div>
+        <div className="detail-title">{question.title}</div>
+        <div className="detail-body">{question.body}</div>
+        <div className="detail-meta">
+          <span style={{ color: "var(--success)", fontWeight: 600 }}>▲ {question.score?.toLocaleString()}</span>
+          <span>👁 {question.views?.toLocaleString()} views</span>
+          {question.has_accepted && <span style={{ color: "var(--success)" }}>✓ Accepted</span>}
+        </div>
+      </div>
+      <div className="answers-header">
+        {question.all_answers?.length || 0} Answers
+      </div>
+      {question.all_answers?.map((ans, i) => (
+        <div key={i} className={`answer-card ${ans.is_accepted ? "accepted" : ""}`}>
+          <div className="answer-body">{ans.body}</div>
+          <div className="answer-meta">
+            <span style={{ color: "var(--success)", fontWeight: 600 }}>▲ {ans.score?.toLocaleString()}</span>
+            {ans.is_accepted && <span className="accepted-badge">✓ Accepted Answer</span>}
+          </div>
+        </div>
+      ))}
+      <div style={{ height: 20 }} />
+    </div>
+  );
+}
+
+// ============================================================
+// PROFILE SCREEN
+// ============================================================
+function ProfileScreen({ user, onBack, onHistory, onLogout }) {
+  const av = getAvatar(user.avatar_id, user.display_name);
+  return (
+    <div className="profile-screen">
+      <button className="back-btn" onClick={onBack} style={{ alignSelf: "flex-start", color: "var(--accent)" }}>← Back</button>
+      <div className={`profile-avatar ${av.bg}`}>{av.letter}</div>
+      <div className="profile-name">{user.display_name}</div>
+      <div className="profile-username">@{user.username}</div>
+      <div className="profile-menu">
+        <div className="profile-menu-item" onClick={onHistory}>
+          <span className="menu-icon">📜</span> History
+        </div>
+        <div className="profile-menu-item">
+          <span className="menu-icon">⚙️</span> Settings
+        </div>
+        <div className="profile-menu-item danger" onClick={onLogout}>
+          <span className="menu-icon">🚪</span> Logout
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// HISTORY SCREEN
+// ============================================================
+function HistoryScreen({ user, onBack }) {
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API}/profile/${user.user_id}`).then(r => r.json()).then(d => {
+      setHistory(d.search_history || []); setLoading(false);
+    });
+  }, []);
+
+  return (
+    <div className="history-screen">
+      <div className="home-topbar">
+        <div className="topbar-logo">Stack<span>IQ</span></div>
+      </div>
+      <div style={{ padding: "8px 20px 0" }}>
+        <button className="back-btn" onClick={onBack}>← Back to profile</button>
+      </div>
+      <div className="feed-section"><div className="feed-label">Search History</div></div>
+      {loading ? <div className="loading"><div className="spinner" /></div> :
+        history.length === 0 ? <div className="loading">No search history yet</div> :
+        history.map((h, i) => (
+          <div key={i} className="history-item">
+            <div className="history-query">🔍 {h.query}</div>
+            <div className="history-time">{new Date(h.timestamp).toLocaleString()}</div>
+          </div>
+        ))
+      }
+    </div>
+  );
+}
+
+// ============================================================
+// MAIN APP
+// ============================================================
+function App() {
+  const [screen, setScreen] = useState("splash");
+  const [user, setUser] = useState(null);
+  const [questionId, setQuestionId] = useState(null);
+  const [searchState, setSearchState] = useState({ query: "", results: null, latency: null });
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+    setSearchState({ query: "", results: null, latency: null });
+    setScreen(userData.has_interests ? "home" : "onboarding");
+  };
+
+  const handleSignup = (userData) => {
+    setUser(userData);
+    setSearchState({ query: "", results: null, latency: null });
+    setScreen("onboarding");
+  };
+
+  const goToDetail = (id) => {
+    setQuestionId(id);
+    setScreen("detail");
+  };
+
+  const backFromDetail = () => {
+    // Go back to home — search state is preserved in App so results will still be there
+    setScreen("home");
+  };
+
+  return (
+    <div className="phone-frame">
+      <div className="phone-notch" />
+      <div className="phone-screen">
+        {screen === "splash" && <SplashScreen onDone={() => setScreen("login")} />}
+        {screen === "login" && <LoginScreen onLogin={handleLogin} onGoSignup={() => setScreen("signup")} />}
+        {screen === "signup" && <SignupScreen onSignup={handleSignup} onGoLogin={() => setScreen("login")} />}
+        {screen === "onboarding" && <OnboardingScreen user={user} onDone={() => setScreen("home")} />}
+        {screen === "home" && <HomeScreen user={user}
+          onQuestion={goToDetail}
+          onProfile={() => setScreen("profile")}
+          searchState={searchState}
+          setSearchState={setSearchState} />}
+        {screen === "detail" && <QuestionDetailScreen questionId={questionId} user={user}
+          onBack={backFromDetail}
+          hasSearchResults={searchState.results !== null} />}
+        {screen === "profile" && <ProfileScreen user={user}
+          onBack={() => setScreen("home")}
+          onHistory={() => setScreen("history")}
+          onLogout={() => { setUser(null); setSearchState({ query: "", results: null, latency: null }); setScreen("login"); }} />}
+        {screen === "history" && <HistoryScreen user={user}
+          onBack={() => setScreen("profile")} />}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById("root"));
+</script>
+</body>
+</html>
