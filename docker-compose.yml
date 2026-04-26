@@ -1,0 +1,14 @@
+services:
+  stackiq-api:
+    build:
+      context: ./App        # Dockerfile is inside App/
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount Dataset_Cleaned so container can read your data files
+      # Left side  = folder on YOUR laptop
+      # Right side = where it appears inside container
+      - ./Dataset_Cleaned:/app/Dataset_Cleaned
+    environment:
+      # Override the DATA_DIR path to match container's folder structure
+      - DATA_DIR=/app/Dataset_Cleaned

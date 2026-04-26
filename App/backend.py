@@ -21,7 +21,7 @@ from sentence_transformers import SentenceTransformer, CrossEncoder
 # ============================================================
 # CONFIG
 # ============================================================
-DATA_DIR = "../Dataset_Cleaned"  # ⚠️ UPDATE THIS PATH
+DATA_DIR = os.getenv("DATA_DIR", "../Dataset_Cleaned")  # ⚠️ UPDATE THIS PATH
 DB_PATH = os.path.join(DATA_DIR, "recsys_users.db")
 
 # ============================================================
