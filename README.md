@@ -46,13 +46,16 @@ Content-based filtering tracks user clicks and builds tag-preference profiles. A
 - **Personalization**: SQLite + tag-preference profiles
 - **Backend**: FastAPI
 - **Frontend**: React (single-page app with phone-frame UI)
+- **Containerization**: Docker
 
 ## Project Structure
 
 ```
 ├── App/
-│   ├── backend.py              # FastAPI REST API
-│   └── index.html              # React frontend
+│   ├── backend.py                   # FastAPI REST API
+│   ├── index.html                   # React frontend
+│   ├── Dockerfile                   # Docker image definition
+│   └── requirements-docker.txt      # Minimal dependencies for Docker
 ├── Codes/
 │   ├── Recommendation_System_Data_Extraction_Code.ipynb
 │   ├── Recommendation_EDA_Viz.ipynb
@@ -64,15 +67,62 @@ Content-based filtering tracks user clicks and builds tag-preference profiles. A
 ├── Presentations/
 ├── Visulizations/
 ├── Literature_Review/
+├── docker-compose.yml               # Multi-service orchestration
 ├── Capstone_Poster.pptx
 ├── Capstone_Proposal.pdf
 ├── requirements.txt
 └── README.md
 ```
 
+---
+
 ## Setup
 
-**1. Clone and install dependencies:**
+There are two ways to run StackIQ — Docker (recommended, works on any machine) or manual setup.
+
+---
+
+### Option 1 — Docker (Recommended)
+
+No Python environment setup needed. Works identically on any machine.
+
+**Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+
+**Step 1 — Clone the repo:**
+```bash
+git clone https://github.com/sharmi1601/StackIQ.git
+cd StackIQ
+```
+
+**Step 2 — Generate data files (one time only):**
+
+Run the notebooks in this order to generate the `Dataset_Cleaned/` folder:
+1. `embedding_generation_questions.ipynb` → generates embeddings
+2. `faiss_index_search.ipynb` → builds FAISS index
+
+> Note: Data extraction from BigQuery requires Google Cloud credentials. Contact the authors for a pre-built dataset.
+
+**Step 3 — Build and run:**
+```bash
+docker compose build    # first time only (~10-15 minutes)
+docker compose up       # starts API at localhost:8000
+```
+
+**Step 4 — Open the frontend:**
+
+Open `App/index.html` directly in your browser.
+
+**Daily usage (after first setup):**
+```bash
+docker compose up      # start
+docker compose down    # stop
+```
+
+---
+
+### Option 2 — Manual Setup
+
+**Step 1 — Clone and install dependencies:**
 ```bash
 git clone https://github.com/sharmi1601/StackIQ.git
 cd StackIQ
@@ -81,20 +131,38 @@ conda activate recsys
 pip install -r requirements.txt
 ```
 
-**2. Generate data (run notebooks in order):**
-- `Data_Extraction_Code.ipynb` → extracts data from BigQuery
-- `Recommendation_EDA_Viz.ipynb` → exploratory analysis
-- `embedding_generation_questions.ipynb` → generates embeddings
-- `faiss_index_search.ipynb` → builds FAISS index
-- `cross_encoder_evaluation.ipynb` → evaluation
-- `personalization.ipynb` → content-based personalization
+**Step 2 — Generate data (run notebooks in order):**
+1. `Data_Extraction_Code.ipynb` → extracts data from BigQuery
+2. `Recommendation_EDA_Viz.ipynb` → exploratory analysis
+3. `embedding_generation_questions.ipynb` → generates embeddings
+4. `faiss_index_search.ipynb` → builds FAISS index
+5. `cross_encoder_evaluation.ipynb` → evaluation
+6. `personalization.ipynb` → content-based personalization
 
-**3. Run the app:**
+**Step 3 — Run the app:**
 ```bash
 cd App
 uvicorn backend:app --reload --port 8000
 ```
-Open `http://localhost:8000` in your browser.
+
+Open `App/index.html` in your browser.
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/health` | Health check |
+| POST | `/api/search` | Semantic search with personalization |
+| GET | `/api/feed/{user_id}` | Personalized homepage feed |
+| POST | `/api/signup` | Create account |
+| POST | `/api/login` | Login |
+| POST | `/api/interests` | Set onboarding tag preferences |
+| POST | `/api/click` | Log question click for personalization |
+| GET | `/api/profile/{user_id}` | User profile and history |
+
+---
 
 ## Authors
 
